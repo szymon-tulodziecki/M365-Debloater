@@ -1,0 +1,9 @@
+C:\Users\Szymon\Desktop\Repozytoria\M365-Debloater\M365-Debloater\obj\Debug\M365-Debloater.csproj.AssemblyReference.cache
+C:\Users\Szymon\Desktop\Repozytoria\M365-Debloater\M365-Debloater\obj\Debug\M365_Debloater.Properties.Resources.resources
+C:\Users\Szymon\Desktop\Repozytoria\M365-Debloater\M365-Debloater\obj\Debug\M365-Debloater.csproj.GenerateResource.cache
+C:\Users\Szymon\Desktop\Repozytoria\M365-Debloater\M365-Debloater\obj\Debug\M365-Debloater.csproj.CoreCompileInputs.cache
+C:\Users\Szymon\Desktop\Repozytoria\M365-Debloater\M365-Debloater\bin\Debug\M365-Debloater.exe.config
+C:\Users\Szymon\Desktop\Repozytoria\M365-Debloater\M365-Debloater\bin\Debug\M365-Debloater.exe
+C:\Users\Szymon\Desktop\Repozytoria\M365-Debloater\M365-Debloater\bin\Debug\M365-Debloater.pdb
+C:\Users\Szymon\Desktop\Repozytoria\M365-Debloater\M365-Debloater\obj\Debug\M365-Debloater.exe
+C:\Users\Szymon\Desktop\Repozytoria\M365-Debloater\M365-Debloater\obj\Debug\M365-Debloater.pdb

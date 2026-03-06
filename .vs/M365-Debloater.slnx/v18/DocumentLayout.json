@@ -1,0 +1,120 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Szymon\\Desktop\\Repozytoria\\M365-Debloater\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{558D87CC-18C6-48DF-A93E-2DA64924977C}|M365-Debloater\\M365-Debloater.csproj|C:\\Users\\Szymon\\Desktop\\Repozytoria\\M365-Debloater\\m365-debloater\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{558D87CC-18C6-48DF-A93E-2DA64924977C}|M365-Debloater\\M365-Debloater.csproj|solutionrelative:m365-debloater\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{558D87CC-18C6-48DF-A93E-2DA64924977C}|M365-Debloater\\M365-Debloater.csproj|c:\\users\\szymon\\desktop\\repozytoria\\m365-debloater\\m365-debloater\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{558D87CC-18C6-48DF-A93E-2DA64924977C}|M365-Debloater\\M365-Debloater.csproj|solutionrelative:m365-debloater\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{558D87CC-18C6-48DF-A93E-2DA64924977C}|M365-Debloater\\M365-Debloater.csproj|C:\\Users\\Szymon\\Desktop\\Repozytoria\\M365-Debloater\\m365-debloater\\load.ps1||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{558D87CC-18C6-48DF-A93E-2DA64924977C}|M365-Debloater\\M365-Debloater.csproj|solutionrelative:m365-debloater\\load.ps1||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{558D87CC-18C6-48DF-A93E-2DA64924977C}|M365-Debloater\\M365-Debloater.csproj|C:\\Users\\Szymon\\Desktop\\Repozytoria\\M365-Debloater\\m365-debloater\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{558D87CC-18C6-48DF-A93E-2DA64924977C}|M365-Debloater\\M365-Debloater.csproj|solutionrelative:m365-debloater\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{558D87CC-18C6-48DF-A93E-2DA64924977C}|M365-Debloater\\M365-Debloater.csproj|C:\\Users\\Szymon\\Desktop\\Repozytoria\\M365-Debloater\\m365-debloater\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{558D87CC-18C6-48DF-A93E-2DA64924977C}|M365-Debloater\\M365-Debloater.csproj|solutionrelative:m365-debloater\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{558D87CC-18C6-48DF-A93E-2DA64924977C}|M365-Debloater\\M365-Debloater.csproj|C:\\Users\\Szymon\\Desktop\\Repozytoria\\M365-Debloater\\m365-debloater\\properties\\app.manifest||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{558D87CC-18C6-48DF-A93E-2DA64924977C}|M365-Debloater\\M365-Debloater.csproj|solutionrelative:m365-debloater\\properties\\app.manifest||{8B382828-6202-11D1-8870-0000F87579D2}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Form1.cs",
+              "DocumentMoniker": "C:\\Users\\Szymon\\Desktop\\Repozytoria\\M365-Debloater\\M365-Debloater\\Form1.cs",
+              "RelativeDocumentMoniker": "M365-Debloater\\Form1.cs",
+              "ToolTip": "C:\\Users\\Szymon\\Desktop\\Repozytoria\\M365-Debloater\\M365-Debloater\\Form1.cs",
+              "RelativeToolTip": "M365-Debloater\\Form1.cs",
+              "ViewState": "AgIAACMBAAAAAAAAAAAgwDYBAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-06T11:35:21.41Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Szymon\\Desktop\\Repozytoria\\M365-Debloater\\M365-Debloater\\Program.cs",
+              "RelativeDocumentMoniker": "M365-Debloater\\Program.cs",
+              "ToolTip": "C:\\Users\\Szymon\\Desktop\\Repozytoria\\M365-Debloater\\M365-Debloater\\Program.cs",
+              "RelativeToolTip": "M365-Debloater\\Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-06T11:46:46.372Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "load.ps1",
+              "DocumentMoniker": "C:\\Users\\Szymon\\Desktop\\Repozytoria\\M365-Debloater\\M365-Debloater\\load.ps1",
+              "RelativeDocumentMoniker": "M365-Debloater\\load.ps1",
+              "ToolTip": "C:\\Users\\Szymon\\Desktop\\Repozytoria\\M365-Debloater\\M365-Debloater\\load.ps1",
+              "RelativeToolTip": "M365-Debloater\\load.ps1",
+              "ViewState": "AgIAADEAAAAAAAAAAAAiwDgAAAA7AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2026-03-06T11:37:09.225Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "app.manifest",
+              "DocumentMoniker": "C:\\Users\\Szymon\\Desktop\\Repozytoria\\M365-Debloater\\M365-Debloater\\Properties\\app.manifest",
+              "RelativeDocumentMoniker": "M365-Debloater\\Properties\\app.manifest",
+              "ToolTip": "C:\\Users\\Szymon\\Desktop\\Repozytoria\\M365-Debloater\\M365-Debloater\\Properties\\app.manifest",
+              "RelativeToolTip": "M365-Debloater\\Properties\\app.manifest",
+              "ViewState": "AgIAAAQAAAAAAAAAAAAUwBkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001203|",
+              "WhenOpened": "2026-03-06T11:36:17.865Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Form1.cs [Projekt]",
+              "DocumentMoniker": "C:\\Users\\Szymon\\Desktop\\Repozytoria\\M365-Debloater\\M365-Debloater\\Form1.cs",
+              "RelativeDocumentMoniker": "M365-Debloater\\Form1.cs",
+              "ToolTip": "C:\\Users\\Szymon\\Desktop\\Repozytoria\\M365-Debloater\\M365-Debloater\\Form1.cs [Projekt]",
+              "RelativeToolTip": "M365-Debloater\\Form1.cs [Projekt]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-06T11:35:09.126Z",
+              "EditorCaption": " [Projekt]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Form1.Designer.cs",
+              "DocumentMoniker": "C:\\Users\\Szymon\\Desktop\\Repozytoria\\M365-Debloater\\M365-Debloater\\Form1.Designer.cs",
+              "RelativeDocumentMoniker": "M365-Debloater\\Form1.Designer.cs",
+              "ToolTip": "C:\\Users\\Szymon\\Desktop\\Repozytoria\\M365-Debloater\\M365-Debloater\\Form1.Designer.cs",
+              "RelativeToolTip": "M365-Debloater\\Form1.Designer.cs",
+              "ViewState": "AgIAAKIAAAAAAAAAAAAwwKUAAAA5AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-06T11:34:45.074Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
