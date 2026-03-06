@@ -163,9 +163,6 @@ This utility operates as a wrapper around Microsoft's official Office Deployment
 
 ## 📚 Technical References
 - [Microsoft Office Deployment Tool (ODT) Documentation](https://docs.microsoft.com/en-us/deployoffice/overview-office-deployment-tool)
-- [Click-To-Run Update Architecture](https://docs.microsoft.com/en-us/officeupdates/overview-update-channels)
-- [Office Registry Schema & Configuration](https://docs.microsoft.com/en-us/deployoffice/configuration-options-for-the-office-deployment-tool)
-
 ---
 
 **Developed by [Szymon Tułodziecki](https://github.com/szymon-tulodziecki)**  
