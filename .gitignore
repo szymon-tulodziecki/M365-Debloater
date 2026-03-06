@@ -1,0 +1,19 @@
+# Build outputs
+bin/
+obj/
+[Mm]365-Debloater/bin/
+[Mm]365-Debloater/obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Logs
+*.log
+
+# OS junk
+Thumbs.db
+.DS_Store

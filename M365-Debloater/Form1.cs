@@ -12,6 +12,7 @@ namespace M365Debloater
 {
     public partial class Form1 : Form
     {
+        // Mapa identyfikatorów aplikacji dla ODT
         private static readonly Dictionary<string, string> AppIdMap = new Dictionary<string, string>
         {
             { "\U0001F4AC   Skype for Business", "Lync"     },
@@ -24,20 +25,20 @@ namespace M365Debloater
             { "\U0001F50D   Bing Search",        "Bing"     },
         };
 
-        // Mapowanie CDNBaseUrl → nazwa kanału dla ODT
-        private static readonly Dictionary<string, string> ChannelMap = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> ProductIdMap = new Dictionary<string, string>
         {
-            { "492350f6-3a01-4f97-b9c0-c7c6ddf67d60", "Current"                  },
-            { "7ffbc6bf-bc32-4f92-8982-f9dd17fd3114", "SemiAnnual"               },
-            { "55336b82-a18d-4dd6-b5f6-9e5095c314a6", "MonthlyEnterprise"        },
-            { "64256afe-f5d9-4f86-8936-8840a6a4f5be", "CurrentPreview"           },
-            { "b8f9b850-328d-4355-ab41-e373f2a48ea2", "SemiAnnualPreview"        },
+            { "O365ProPlusRetail", "O365ProPlusRetail" },
+            { "O365BusinessRetail", "O365BusinessRetail" },
+            { "ProPlus2019Retail", "ProPlus2019Retail" },
+            { "ProPlus2021Retail", "ProPlus2021Retail" },
+            { "ProPlus2024Volume", "ProPlus2024Volume" },
         };
 
         private string _odtSetupPath = null;
         private string _detectedProductId = "O365BusinessRetail";
         private string _detectedArch = "64";
-        private string _detectedChannel = "Current";  // odczytany z rejestru
+        private string _detectedChannel = "Current";
+        private int _lastOdtExitCode = int.MinValue;
 
         public Form1()
         {
@@ -47,7 +48,7 @@ namespace M365Debloater
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            SetStatus("⚠ Operation may take several minutes — do not close any windows.");
+            SetStatus("⚠ Ready to debloat Microsoft 365.");
             DetectOfficeFromRegistry();
         }
 
@@ -66,25 +67,26 @@ namespace M365Debloater
 
                     string releaseIds = key.GetValue("ProductReleaseIds") as string ?? "";
                     string platform = key.GetValue("Platform") as string ?? "x64";
-                    string version = key.GetValue("VersionToReport") as string ?? "—";
-                    string cdnUrl = key.GetValue("CDNBaseUrl") as string ?? "";
+                    string version = key.GetValue("VersionToReport") as string ?? "-";
+                    string cdnBaseUrl = key.GetValue("CDNBaseUrl") as string ?? "";
+                    string updateChannel = key.GetValue("UpdateChannel") as string ?? "";
+                    _detectedArch = platform.Equals("x86", StringComparison.OrdinalIgnoreCase) ? "32" : "64";
 
-                    _detectedArch = platform.Equals("x86",
-                        StringComparison.OrdinalIgnoreCase) ? "32" : "64";
-
-                    // Wykryj ProductID dynamicznie z rejestru
-                    if (!string.IsNullOrWhiteSpace(releaseIds))
+                    foreach (var product in ProductIdMap)
                     {
-                        _detectedProductId = releaseIds.Split(',')[0].Trim();
+                        if (releaseIds.IndexOf(product.Key, StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            _detectedProductId = product.Value;
+                            break;
+                        }
                     }
 
-                    // Wykryj kanał z CDNBaseUrl (zawiera GUID kanału)
-                    foreach (var kvp in ChannelMap)
-                        if (cdnUrl.IndexOf(kvp.Key, StringComparison.OrdinalIgnoreCase) >= 0)
-                        { _detectedChannel = kvp.Value; break; }
+                    if (string.IsNullOrWhiteSpace(_detectedProductId) && !string.IsNullOrWhiteSpace(releaseIds))
+                        _detectedProductId = releaseIds.Split(',').First().Trim();
 
-                    SetStatus(
-                        $"✓ {_detectedProductId} | {platform} | {_detectedChannel} | v{version}");
+                    _detectedChannel = DetectChannelFromCdnUrl(cdnBaseUrl, updateChannel);
+
+                    SetStatus($"✓ Detected: {_detectedProductId} | {_detectedArch}-bit | {_detectedChannel} | v{version}");
                 }
             }
             catch (Exception ex)
@@ -93,16 +95,33 @@ namespace M365Debloater
             }
         }
 
+        private static string DetectChannelFromCdnUrl(string cdnBaseUrl, string updateChannel)
+        {
+            string channelSource = string.IsNullOrWhiteSpace(cdnBaseUrl) ? updateChannel ?? "" : cdnBaseUrl;
+
+            if (channelSource.IndexOf("492350f6-3a01-4f97-b9c0-c7c6ddf67d60", StringComparison.OrdinalIgnoreCase) >= 0)
+                return "Current";
+            if (channelSource.IndexOf("55336b82-a18d-4dd6-b5f6-9e5095c314a6", StringComparison.OrdinalIgnoreCase) >= 0)
+                return "MonthlyEnterprise";
+            if (channelSource.IndexOf("7ffbc6bf-bc32-4f92-8982-f9dd17fd3114", StringComparison.OrdinalIgnoreCase) >= 0)
+                return "SemiAnnual";
+            if (channelSource.IndexOf("b8f9b850-328d-4355-9145-c59439a0c4cf", StringComparison.OrdinalIgnoreCase) >= 0)
+                return "BetaChannel";
+
+            return "Current";
+        }
+
         private async void btnStart_Click(object sender, EventArgs e)
         {
             await RunDebloaterAsync();
         }
 
+        // TA METODA BYŁA BRAKUJĄCA - NAPRAWIA BŁĄD KOMPILACJI
         private void btnRunAgain_Click(object sender, EventArgs e)
         {
             var result = MessageBox.Show(
-                "Windows will restart now. Continue?",
-                "Restart required",
+                "Windows will restart now to apply changes. Continue?",
+                "Restart Required",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
 
@@ -115,11 +134,13 @@ namespace M365Debloater
                     FileName = "shutdown",
                     Arguments = "/r /t 0",
                     UseShellExecute = true,
-                    Verb = "runas",
                     CreateNoWindow = true
                 });
             }
-            catch (Exception ex) { SetStatus("✗ Restart failed: " + ex.Message); }
+            catch (Exception ex)
+            {
+                SetStatus("✗ Restart failed: " + ex.Message);
+            }
         }
 
         private async Task RunDebloaterAsync()
@@ -127,47 +148,38 @@ namespace M365Debloater
             var selected = GetSelectedAppIds();
             if (selected.Count == 0)
             {
-                MessageBox.Show("Please select at least one component.",
-                    "No selection", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Please select at least one component to remove.", "Selection Required", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
             btnStart.Enabled = false;
-            btnRunAgain.Visible = false;
-            pbProgress.Value = 0;
+            pbProgress.Value = 10;
 
             try
             {
-                // Krok 1: Upewnij się, że ODT zostało wcześniej pobrane przez loader (WinGet)
-                if (EnsureOdtExists())
+                if (!EnsureOdtExists())
                 {
-                    SetStatus("✓ Office Deployment Tool found in cache.");
-                    SetProgress(35);
-                }
-                else
-                {
-                    SetStatus("✗ Office Deployment Tool (ODT) not found. Run the PowerShell loader again so it can download ODT via WinGet.");
+                    SetStatus("✗ ODT not found. Run the PowerShell loader again.");
                     return;
                 }
 
-                // Krok 2: generuj XML z PRAWDZIWYM kanałem z rejestru
-                SetStatus($"📄 Config: {_detectedProductId} | {_detectedArch}-bit | Channel: {_detectedChannel} | {selected.Count} app(s)");
                 string xmlPath = GenerateConfigXml(selected);
+                SetStatus("⚙ Reconfiguring Office... Do not close.");
+                pbProgress.Value = 40;
 
-                // Zapisz XML do Desktop żeby można było sprawdzić
-                string debugXml = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-                    "odt_debug.xml");
-                File.Copy(xmlPath, debugXml, true);
-
-                SetProgress(50);
-
-                SetStatus("⚙ Reconfiguring Office — please wait…");
                 bool success = await RunOdtAsync(xmlPath);
-                SetProgress(90);
 
-                CleanupTempFiles(xmlPath);
-                SetProgress(100);
+                try
+                {
+                    if (File.Exists(xmlPath))
+                        File.Delete(xmlPath);
+                }
+                catch
+                {
+                    // Best-effort cleanup only.
+                }
+
+                pbProgress.Value = 100;
 
                 if (success)
                 {
@@ -176,9 +188,10 @@ namespace M365Debloater
                 }
                 else
                 {
-                    // Odczytaj log ODT z %TEMP%
-                    string logInfo = GetLatestOdtLogPath();
-                    SetStatus($"⚠ ODT finished. Check Desktop\\odt_debug.xml and {logInfo}");
+                    if (_lastOdtExitCode == 17002)
+                        SetStatus("⚠ ODT returned 17002. Close all Office apps/services and run again.");
+                    else
+                        SetStatus($"⚠ ODT failed (exit code: {_lastOdtExitCode}). Check ODT logs in %TEMP%.");
                     ShowRestartButton();
                 }
             }
@@ -198,21 +211,16 @@ namespace M365Debloater
                 new XElement("Configuration",
                     new XElement("Add",
                         new XAttribute("OfficeClientEdition", _detectedArch),
-                        new XAttribute("Channel", _detectedChannel),   // ← kanał z rejestru!
+                        new XAttribute("Channel", _detectedChannel),
                         new XAttribute("Version", "MatchInstalled"),
                         new XElement("Product",
                             new XAttribute("ID", _detectedProductId),
-                            new XElement("Language", new XAttribute("ID", "MatchOS")),
-                            excludeIds.Select(id =>
-                                new XElement("ExcludeApp", new XAttribute("ID", id)))
+                            new XElement("Language", new XAttribute("ID", "MatchInstalled")),
+                            excludeIds.Select(id => new XElement("ExcludeApp", new XAttribute("ID", id)))
                         )
                     ),
-                    new XElement("Property",
-                        new XAttribute("Name", "FORCEAPPSHUTDOWN"),
-                        new XAttribute("Value", "TRUE")),
-                    new XElement("Display",
-                        new XAttribute("Level", "None"),
-                        new XAttribute("AcceptEULA", "TRUE"))
+                    new XElement("Property", new XAttribute("Name", "FORCEAPPSHUTDOWN"), new XAttribute("Value", "TRUE")),
+                    new XElement("Display", new XAttribute("Level", "None"), new XAttribute("AcceptEULA", "TRUE"))
                 )
             );
 
@@ -231,33 +239,21 @@ namespace M365Debloater
                     {
                         FileName = _odtSetupPath,
                         Arguments = $"/configure \"{xmlPath}\"",
-                        UseShellExecute = true,
-                        Verb = "runas",
-                        WindowStyle = ProcessWindowStyle.Minimized
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden
                     };
                     var proc = Process.Start(psi);
-                    proc.WaitForExit(600000);
-                    return proc.ExitCode == 0 || proc.ExitCode == 17002;
+                    proc.WaitForExit(1200000); // 20 min
+                    _lastOdtExitCode = proc.ExitCode;
+                    return proc.ExitCode == 0;
                 }
-                catch (Exception ex)
+                catch
                 {
-                    SetStatus("✗ ODT launch failed: " + ex.Message);
+                    _lastOdtExitCode = -1;
                     return false;
                 }
             });
-        }
-
-        private string GetLatestOdtLogPath()
-        {
-            try
-            {
-                var log = Directory.GetFiles(Path.GetTempPath(), "*.log")
-                    .Select(f => new FileInfo(f))
-                    .OrderByDescending(f => f.LastWriteTime)
-                    .FirstOrDefault();
-                return log != null ? $"%TEMP%\\{log.Name}" : "%TEMP%\\*.log";
-            }
-            catch { return "%TEMP%\\*.log"; }
         }
 
         private bool EnsureOdtExists()
@@ -269,27 +265,33 @@ namespace M365Debloater
 
         private List<string> GetSelectedAppIds()
         {
-            var ids = new List<string>();
+            var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var item in clbApps.CheckedItems)
+            {
                 if (AppIdMap.TryGetValue(item.ToString(), out string id))
+                {
                     ids.Add(id);
-            return ids;
-        }
 
-        private void CleanupTempFiles(string xmlPath)
-        {
-            try { if (File.Exists(xmlPath)) File.Delete(xmlPath); } catch { }
+                    // Legacy OneDrive for Business sync client can remain unless Groove is also excluded.
+                    if (string.Equals(id, "OneDrive", StringComparison.OrdinalIgnoreCase))
+                        ids.Add("Groove");
+                }
+            }
+            return ids.ToList();
         }
 
         private void ShowRestartButton()
         {
-            if (btnStart.InvokeRequired) { btnStart.Invoke(new Action(ShowRestartButton)); return; }
-            btnStart.Size = new System.Drawing.Size(185, 44);
-            btnStart.Location = new System.Drawing.Point(20, 10);
-            btnStart.Text = "RUN AGAIN";
-            btnRunAgain.Location = new System.Drawing.Point(215, 10);
-            btnRunAgain.Size = new System.Drawing.Size(185, 44);
+            if (btnRunAgain.InvokeRequired)
+            {
+                btnRunAgain.Invoke(new Action(ShowRestartButton));
+                return;
+            }
+            btnStart.Text = "TASK FINISHED";
+            btnStart.Enabled = false;
             btnRunAgain.Visible = true;
+            btnRunAgain.Location = new System.Drawing.Point(20, 10);
+            btnRunAgain.Width = 380;
         }
 
         private void SetStatus(string text)
@@ -298,14 +300,6 @@ namespace M365Debloater
                 lblStatus.Invoke(new Action(() => lblStatus.Text = text));
             else
                 lblStatus.Text = text;
-        }
-
-        private void SetProgress(int value)
-        {
-            if (pbProgress.InvokeRequired)
-                pbProgress.Invoke(new Action(() => pbProgress.Value = value));
-            else
-                pbProgress.Value = value;
         }
     }
 }

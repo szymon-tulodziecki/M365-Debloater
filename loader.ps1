@@ -14,6 +14,27 @@ $ExeName     = "M365Debloater.exe"
 $DownloadUrl = "https://github.com/$GithubUser/$GithubRepo/releases/latest/download/$ExeName"
 $TempPath    = Join-Path $env:TEMP $ExeName
 $OdtDir      = Join-Path $env:TEMP "odt"
+$OdtDownloadDir = Join-Path $env:TEMP "M365Debloater\odt-download"
+
+function Get-WinGetPath {
+    $cmd = Get-Command winget -ErrorAction SilentlyContinue
+    if ($cmd -and $cmd.Source) { return $cmd.Source }
+
+    $candidates = @(
+        "$env:ProgramFiles\WindowsApps\Microsoft.DesktopAppInstaller*_x64__8wekyb3d8bbwe\winget.exe",
+        "$env:ProgramFiles\WindowsApps\Microsoft.DesktopAppInstaller*_x86__8wekyb3d8bbwe\winget.exe",
+        "$env:LOCALAPPDATA\Microsoft\WindowsApps\winget.exe"
+    )
+
+    foreach ($pattern in $candidates) {
+        $match = Get-ChildItem -Path $pattern -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+        if ($match) { return $match.FullName }
+    }
+
+    return $null
+}
 
 Write-Host "" 
 Write-Host "  ╔══════════════════════════════════════╗" -ForegroundColor Cyan
@@ -26,14 +47,27 @@ try {
     if (Test-Path $OdtDir) {
         Remove-Item -Path $OdtDir -Recurse -Force -ErrorAction SilentlyContinue
     }
+    if (Test-Path $OdtDownloadDir) {
+        Remove-Item -Path $OdtDownloadDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
     New-Item -ItemType Directory -Path $OdtDir -Force | Out-Null
+    New-Item -ItemType Directory -Path $OdtDownloadDir -Force | Out-Null
+
+    $WinGetPath = Get-WinGetPath
+    if (-not $WinGetPath) {
+        throw "Nie znaleziono winget.exe. Zainstaluj App Installer i sprobuj ponownie."
+    }
 
     Write-Host "      Pobieranie ODT przez WinGet..." -ForegroundColor Yellow
 
     # Pobierz instalator ODT przez WinGet do katalogu TEMP
-    winget download --id Microsoft.Office.DeploymentTool --location $env:TEMP --accept-source-agreements --accept-package-agreements | Out-Null
+    & $WinGetPath download --id Microsoft.Office.DeploymentTool --location $OdtDownloadDir --accept-source-agreements --accept-package-agreements | Out-Null
 
-    $DownloadedExe = Get-ChildItem -Path $env:TEMP -Filter "officedeploymenttool*.exe" |
+    if ($LASTEXITCODE -ne 0) {
+        throw "Polecenie winget zakonczone kodem: $LASTEXITCODE"
+    }
+
+    $DownloadedExe = Get-ChildItem -Path $OdtDownloadDir -Filter "officedeploymenttool*.exe" |
         Sort-Object LastWriteTime -Descending |
         Select-Object -First 1
 
@@ -88,6 +122,7 @@ Write-Host ""
 Write-Host "[CLEANUP] Usuwanie plikow tymczasowych..." -ForegroundColor DarkGray
 Start-Sleep -Seconds 2
 Remove-Item -Path $TempPath -Force -ErrorAction SilentlyContinue
+Remove-Item -Path $OdtDownloadDir -Recurse -Force -ErrorAction SilentlyContinue
 Write-Host "          OK" -ForegroundColor DarkGray
 Write-Host "" 
 Write-Host "  Gotowe." -ForegroundColor Cyan
