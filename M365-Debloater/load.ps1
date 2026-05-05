@@ -12,6 +12,7 @@ if ([string]::IsNullOrEmpty($CurrentDir)) { $CurrentDir = Get-Location }
 $ExePath = Join-Path $CurrentDir "M365Debloater.exe"
 $OdtDir  = Join-Path $env:TEMP "odt"
 $OdtDownloadDir = Join-Path $env:TEMP "M365Debloater\odt-download"
+$OdtDownloadPageUrl = "https://www.microsoft.com/en-us/download/details.aspx?id=49117"
 
 function Get-WinGetPath {
     $cmd = Get-Command winget -ErrorAction SilentlyContinue
@@ -33,6 +34,47 @@ function Get-WinGetPath {
     return $null
 }
 
+function Resolve-OdtDownloadUrl {
+    $page = Invoke-WebRequest -Uri $OdtDownloadPageUrl -UseBasicParsing
+    $link = $page.Links |
+        Where-Object { $_.href -match "https://download\.microsoft\.com/.+officedeploymenttool.*\.exe" } |
+        Select-Object -First 1
+
+    if ($link -and $link.href) { return $link.href }
+    if ($page.Content -match "https://download\.microsoft\.com/[^'""<>]+officedeploymenttool[^'""<>]+\.exe") {
+        return $Matches[0]
+    }
+
+    throw "Nie znaleziono linku pobierania ODT na stronie Microsoft Download Center."
+}
+
+function Get-OdtInstaller {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$DestinationDirectory
+    )
+
+    $WinGetPath = Get-WinGetPath
+    if ($WinGetPath) {
+        & $WinGetPath download --id Microsoft.Office.DeploymentTool --location $DestinationDirectory --accept-source-agreements --accept-package-agreements | Out-Null
+
+        if ($LASTEXITCODE -eq 0) {
+            $downloaded = Get-ChildItem -Path $DestinationDirectory -Filter "officedeploymenttool*.exe" |
+                Sort-Object LastWriteTime -Descending |
+                Select-Object -First 1
+
+            if ($downloaded) { return $downloaded.FullName }
+        }
+    }
+
+    $fallbackPath = Join-Path $DestinationDirectory "officedeploymenttool.exe"
+    $resolvedUrl = Resolve-OdtDownloadUrl
+    Invoke-WebRequest -Uri $resolvedUrl -OutFile $fallbackPath -UseBasicParsing
+
+    if (Test-Path $fallbackPath) { return $fallbackPath }
+    throw "Nie udalo sie pobrac instalatora ODT."
+}
+
 # ── Krok 1: Przygotowanie ODT przez WinGet ────────────────────────────────────
 try {
     if (Test-Path $OdtDir) { Remove-Item -Path $OdtDir -Recurse -Force -ErrorAction SilentlyContinue }
@@ -41,34 +83,16 @@ try {
     New-Item -ItemType Directory -Path $OdtDir -Force | Out-Null
     New-Item -ItemType Directory -Path $OdtDownloadDir -Force | Out-Null
 
-    $WinGetPath = Get-WinGetPath
-    if (-not $WinGetPath) {
-        throw "Nie znaleziono winget.exe. Zainstaluj App Installer i uruchom ponownie."
-    }
-    
-    # Pobieranie ODT z oficjalnych serwerów MS przez WinGet
-    & $WinGetPath download --id Microsoft.Office.DeploymentTool --location $OdtDownloadDir --accept-source-agreements --accept-package-agreements | Out-Null
+    $DownloadedExe = Get-OdtInstaller -DestinationDirectory $OdtDownloadDir
 
-    if ($LASTEXITCODE -ne 0) {
-        throw "Polecenie winget zakonczone kodem: $LASTEXITCODE"
-    }
-    
-    $DownloadedExe = Get-ChildItem -Path $OdtDownloadDir -Filter "officedeploymenttool*.exe" |
-        Sort-Object LastWriteTime -Descending |
-        Select-Object -First 1
-    
-    if ($DownloadedExe) {
-        # Rozpakowanie ciche do Temp
-        Start-Process -FilePath $DownloadedExe.FullName -ArgumentList "/extract:`"$OdtDir`" /quiet" -Wait -WindowStyle Hidden
+    # Rozpakowanie ciche do Temp
+    Start-Process -FilePath $DownloadedExe -ArgumentList "/extract:`"$OdtDir`" /quiet" -Wait -WindowStyle Hidden
 
-        if (-not (Test-Path (Join-Path $OdtDir "setup.exe"))) {
-            throw "Po wypakowaniu nie znaleziono setup.exe w: $OdtDir"
-        }
-    } else {
-        throw "Nie znaleziono instalatora ODT w katalogu: $OdtDownloadDir"
+    if (-not (Test-Path (Join-Path $OdtDir "setup.exe"))) {
+        throw "Po wypakowaniu nie znaleziono setup.exe w: $OdtDir"
     }
 } catch {
-    [System.Windows.Forms.MessageBox]::Show("Błąd przygotowania ODT (WinGet):`n$_", "M365 Debloater", 0, 16)
+    [System.Windows.Forms.MessageBox]::Show("Blad przygotowania ODT:`n$_", "M365 Debloater", 0, 16)
     exit 1
 }
 
@@ -85,6 +109,6 @@ if (Test-Path $ExePath) {
 
 # ── Czyszczenie ODT z Temp po zamknieciu apki ─────────────────────────────────
 Remove-Item -Path $OdtDir -Recurse -Force -ErrorAction SilentlyContinue
-if ($DownloadedExe) { Remove-Item -Path $DownloadedExe.FullName -Force -ErrorAction SilentlyContinue }
+if ($DownloadedExe) { Remove-Item -Path $DownloadedExe -Force -ErrorAction SilentlyContinue }
 Remove-Item -Path $OdtDownloadDir -Recurse -Force -ErrorAction SilentlyContinue
 exit 0

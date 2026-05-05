@@ -1,8 +1,8 @@
-#Requires -RunAsAdministrator
-<#!
+﻿#Requires -RunAsAdministrator
+<#
 .SYNOPSIS
-    M365 Debloater – Warstwa 1: PowerShell Loader
-    Użycie (jako administrator w PowerShell):
+    M365 Debloater - Warstwa 1: PowerShell Loader
+    Uzycie (jako administrator w PowerShell):
     irm https://raw.githubusercontent.com/TWOJ_USER/m365-debloater/main/loader.ps1 | iex
 #>
 
@@ -15,6 +15,7 @@ $DownloadUrl = "https://github.com/$GithubUser/$GithubRepo/releases/latest/downl
 $TempPath    = Join-Path $env:TEMP $ExeName
 $OdtDir      = Join-Path $env:TEMP "odt"
 $OdtDownloadDir = Join-Path $env:TEMP "M365Debloater\odt-download"
+$OdtDownloadPageUrl = "https://www.microsoft.com/en-us/download/details.aspx?id=49117"
 
 function Get-WinGetPath {
     $cmd = Get-Command winget -ErrorAction SilentlyContinue
@@ -36,11 +37,57 @@ function Get-WinGetPath {
     return $null
 }
 
+function Resolve-OdtDownloadUrl {
+    $page = Invoke-WebRequest -Uri $OdtDownloadPageUrl -UseBasicParsing
+    $link = $page.Links |
+        Where-Object { $_.href -match "https://download\.microsoft\.com/.+officedeploymenttool.*\.exe" } |
+        Select-Object -First 1
+
+    if ($link -and $link.href) { return $link.href }
+    if ($page.Content -match "https://download\.microsoft\.com/[^'""<>]+officedeploymenttool[^'""<>]+\.exe") {
+        return $Matches[0]
+    }
+
+    throw "Nie znaleziono linku pobierania ODT na stronie Microsoft Download Center."
+}
+
+function Get-OdtInstaller {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$DestinationDirectory
+    )
+
+    $WinGetPath = Get-WinGetPath
+    if ($WinGetPath) {
+        Write-Host "      Pobieranie ODT przez WinGet..." -ForegroundColor Yellow
+        & $WinGetPath download --id Microsoft.Office.DeploymentTool --location $DestinationDirectory --accept-source-agreements --accept-package-agreements | Out-Null
+
+        if ($LASTEXITCODE -eq 0) {
+            $downloaded = Get-ChildItem -Path $DestinationDirectory -Filter "officedeploymenttool*.exe" |
+                Sort-Object LastWriteTime -Descending |
+                Select-Object -First 1
+
+            if ($downloaded) { return $downloaded.FullName }
+        }
+
+        Write-Host "      WinGet nie pobral ODT, proba pobrania bezposrednio z Microsoft Download Center..." -ForegroundColor DarkYellow
+    } else {
+        Write-Host "      WinGet niedostepny, pobieranie bezposrednio z Microsoft Download Center..." -ForegroundColor Yellow
+    }
+
+    $fallbackPath = Join-Path $DestinationDirectory "officedeploymenttool.exe"
+    $resolvedUrl = Resolve-OdtDownloadUrl
+    Invoke-WebRequest -Uri $resolvedUrl -OutFile $fallbackPath -UseBasicParsing
+
+    if (Test-Path $fallbackPath) { return $fallbackPath }
+    throw "Nie udalo sie pobrac instalatora ODT."
+}
+
 Write-Host "" 
-Write-Host "  ╔══════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "  ║        M365 Debloater  v1.0          ║" -ForegroundColor Cyan
-Write-Host "  ╚══════════════════════════════════════╝" -ForegroundColor Cyan
-Write-Host "" 
+Write-Host ""
+Write-Host "  ======================================" -ForegroundColor Cyan
+Write-Host "          M365 Debloater  v1.0          " -ForegroundColor Cyan
+Write-Host "  ======================================" -ForegroundColor Cyan
 
 Write-Host "[0/3] Przygotowywanie Office Deployment Tool (ODT)..." -ForegroundColor Yellow
 try {
@@ -53,30 +100,10 @@ try {
     New-Item -ItemType Directory -Path $OdtDir -Force | Out-Null
     New-Item -ItemType Directory -Path $OdtDownloadDir -Force | Out-Null
 
-    $WinGetPath = Get-WinGetPath
-    if (-not $WinGetPath) {
-        throw "Nie znaleziono winget.exe. Zainstaluj App Installer i sprobuj ponownie."
-    }
-
-    Write-Host "      Pobieranie ODT przez WinGet..." -ForegroundColor Yellow
-
-    # Pobierz instalator ODT przez WinGet do katalogu TEMP
-    & $WinGetPath download --id Microsoft.Office.DeploymentTool --location $OdtDownloadDir --accept-source-agreements --accept-package-agreements | Out-Null
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "Polecenie winget zakonczone kodem: $LASTEXITCODE"
-    }
-
-    $DownloadedExe = Get-ChildItem -Path $OdtDownloadDir -Filter "officedeploymenttool*.exe" |
-        Sort-Object LastWriteTime -Descending |
-        Select-Object -First 1
-
-    if (-not $DownloadedExe) {
-        throw "Nie znaleziono pobranego pliku officedeploymenttool*.exe w %TEMP%."
-    }
+    $DownloadedExe = Get-OdtInstaller -DestinationDirectory $OdtDownloadDir
 
     Write-Host "      Wypakowywanie ODT do $OdtDir..." -ForegroundColor Yellow
-    Start-Process -FilePath $DownloadedExe.FullName -ArgumentList "/extract:`"$OdtDir`" /quiet" -Wait
+    Start-Process -FilePath $DownloadedExe -ArgumentList "/extract:`"$OdtDir`" /quiet" -Wait
 
     if (-not (Test-Path (Join-Path $OdtDir "setup.exe"))) {
         throw "Po wypakowaniu nie znaleziono setup.exe w $OdtDir."
@@ -87,7 +114,7 @@ try {
 catch {
     Write-Host "BLAD: Nie udalo sie przygotowac Office Deployment Tool (ODT)." -ForegroundColor Red
     Write-Host "      $_" -ForegroundColor Red
-    Write-Host "Upewnij sie, ze WinGet (App Installer) jest zainstalowany i sprobuj ponownie." -ForegroundColor Red
+    Write-Host "Sprawdz polaczenie z internetem i dostep do Microsoft Download Center." -ForegroundColor Red
     exit 1
 }
 
