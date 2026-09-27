@@ -254,6 +254,7 @@ namespace M365Debloater
                     FileName = _odtSetupPath,
                     Arguments = "/configure \"" + xmlPath + "\"",
                     UseShellExecute = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
                     Verb = "runas"
                 }))
                 {
