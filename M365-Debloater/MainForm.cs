@@ -29,18 +29,21 @@ namespace M365Debloater
                 // ItemCheck runs before CheckedItems contains the new value.
                 BeginInvoke(new Action(UpdateSelection));
             };
-            Load += (sender, e) => DetectOffice();
+            Load += async (sender, e) => await DetectOfficeAsync();
             FormClosing += (sender, e) =>
             {
                 if (!_running || e.CloseReason != CloseReason.UserClosing) return;
                 e.Cancel = true;
-                SetStatus("Office setup is still running. Please wait for the result before closing.", true);
+                SetStatus("Office preparation or setup is still running. Please wait before closing.", true);
             };
         }
 
-        private void DetectOffice()
+        private async Task DetectOfficeAsync()
         {
+            if (_running) return;
+            _running = true;
             _ready = false;
+            UpdateSelection();
             _product = null;
             _existingExclusions = new string[0];
             lblInstallation.Text = "No supported installation detected.";
@@ -77,7 +80,13 @@ namespace M365Debloater
 
                 _odtSetupPath = Path.Combine(Path.GetTempPath(), "odt", "setup.exe");
                 if (!File.Exists(_odtSetupPath))
-                    throw new InvalidOperationException("Office detected. Prepare Office Deployment Tool in %TEMP%\\odt, then refresh detection.");
+                {
+                    SetStatus("Downloading and extracting Office Deployment Tool from Microsoft...");
+                    pbProgress.Style = ProgressBarStyle.Marquee;
+                    await PrepareOdtAsync();
+                    if (!File.Exists(_odtSetupPath))
+                        throw new InvalidOperationException("ODT preparation did not produce setup.exe. Use Refresh detection to retry.");
+                }
 
                 _ready = true;
                 SetStatus("Ready. Select components to review your changes.");
@@ -86,7 +95,53 @@ namespace M365Debloater
             {
                 SetStatus(ex.Message, true);
             }
+            finally
+            {
+                _running = false;
+                pbProgress.Style = ProgressBarStyle.Blocks;
+            }
             UpdateSelection();
+        }
+
+        private static async Task PrepareOdtAsync()
+        {
+            string scriptPath = Path.Combine(Path.GetTempPath(), "M365Debloater-" + Guid.NewGuid().ToString("N") + ".ps1");
+            try
+            {
+                using (var resource = typeof(MainForm).Assembly.GetManifestResourceStream("M365Debloater.PrepareOdt.ps1"))
+                using (var file = File.Create(scriptPath))
+                {
+                    if (resource == null) throw new InvalidOperationException("The embedded ODT preparation script is missing.");
+                    resource.CopyTo(file);
+                }
+                using (var process = new Process())
+                {
+                    process.StartInfo = new ProcessStartInfo
+                    {
+                        FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System),
+                            @"WindowsPowerShell\v1.0\powershell.exe"),
+                        Arguments = "-NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"" + scriptPath + "\" -PrepareOnly",
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true
+                    };
+                    process.Start();
+                    var output = process.StandardOutput.ReadToEndAsync();
+                    var error = process.StandardError.ReadToEndAsync();
+                    await Task.Run(() => process.WaitForExit());
+                    await output;
+                    string details = await error;
+                    if (process.ExitCode != 0)
+                        throw new InvalidOperationException("Could not prepare ODT. Use Refresh detection to retry. " + details.Trim());
+                }
+            }
+            finally
+            {
+                try { File.Delete(scriptPath); }
+                catch (IOException) { }
+                catch (UnauthorizedAccessException) { }
+            }
         }
 
         private OfficeApp[] SelectedApps()
@@ -116,16 +171,16 @@ namespace M365Debloater
             for (int i = 0; i < clbApps.Items.Count; i++) clbApps.SetItemChecked(i, false);
         }
 
-        private void btnRefresh_Click(object sender, EventArgs e)
+        private async void btnRefresh_Click(object sender, EventArgs e)
         {
-            DetectOffice();
+            await DetectOfficeAsync();
         }
 
         private async void btnStart_Click(object sender, EventArgs e)
         {
             if (_running || !_ready || SelectedApps().Length == 0) return;
             // Recheck before confirmation: Office or its prerequisites may have changed.
-            DetectOffice();
+            await DetectOfficeAsync();
             if (!_ready) return;
             var selected = SelectedApps();
             string summary = "Apply these exclusions to " + _product + "?\n\n"

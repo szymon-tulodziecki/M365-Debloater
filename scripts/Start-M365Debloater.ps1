@@ -1,14 +1,16 @@
 #Requires -Version 5.1
-#Requires -RunAsAdministrator
 <#
 .SYNOPSIS
 Prepares Microsoft's Office Deployment Tool and starts a local M365 Debloater build.
 .PARAMETER ApplicationPath
 Path to M365Debloater.exe. Defaults to the repository's Release build.
+.PARAMETER PrepareOnly
+Download and extract ODT without launching the application.
 #>
 [CmdletBinding()]
 param(
-    [string]$ApplicationPath = (Join-Path $PSScriptRoot '..\M365-Debloater\bin\Release\M365Debloater.exe')
+    [string]$ApplicationPath,
+    [switch]$PrepareOnly
 )
 
 $ErrorActionPreference = 'Stop'
@@ -17,10 +19,14 @@ $odtDirectory = Join-Path $env:TEMP 'odt'
 $downloadDirectory = Join-Path $env:TEMP ('M365Debloater-download-' + [guid]::NewGuid().ToString('N'))
 
 try {
-    if (-not (Test-Path -LiteralPath $ApplicationPath -PathType Leaf)) {
+    if (-not $PrepareOnly -and -not $ApplicationPath) {
+        $ApplicationPath = Join-Path $PSScriptRoot '..\M365-Debloater\bin\Release\M365Debloater.exe'
+    }
+    if (-not $PrepareOnly -and -not (Test-Path -LiteralPath $ApplicationPath -PathType Leaf)) {
         throw "Application not found: $ApplicationPath. Build the Release configuration or provide -ApplicationPath."
     }
-    $ApplicationPath = (Resolve-Path -LiteralPath $ApplicationPath).Path
+    if (-not $PrepareOnly) { $ApplicationPath = (Resolve-Path -LiteralPath $ApplicationPath).Path }
+    [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
     New-Item -ItemType Directory -Path $downloadDirectory | Out-Null
 
     Write-Host 'Preparing Office Deployment Tool...'
@@ -38,22 +44,27 @@ try {
 
     $extracted = Join-Path $downloadDirectory 'extracted'
     New-Item -ItemType Directory -Path $extracted | Out-Null
-    $extractProcess = Start-Process -FilePath $installer -ArgumentList "/extract:`"$extracted`" /quiet" -PassThru -Wait
+    $extractProcess = Start-Process -FilePath $installer -ArgumentList "/extract:`"$extracted`" /quiet" -WindowStyle Hidden -PassThru -Wait
     if ($extractProcess.ExitCode -ne 0 -or -not (Test-Path -LiteralPath (Join-Path $extracted 'setup.exe'))) {
         throw 'ODT extraction failed. No application changes were started.'
     }
     New-Item -ItemType Directory -Path $odtDirectory -Force | Out-Null
     Copy-Item -LiteralPath (Join-Path $extracted 'setup.exe') -Destination (Join-Path $odtDirectory 'setup.exe') -Force
 
-    Write-Host 'Starting M365 Debloater. Review and confirm changes in the application.'
-    Start-Process -FilePath $ApplicationPath -Wait
+    if (-not $PrepareOnly) {
+        Write-Host 'Starting M365 Debloater. Review and confirm changes in the application.'
+        Start-Process -FilePath $ApplicationPath -Wait
+    }
 }
 catch {
-    Write-Error $_
+    Write-Error $_ -ErrorAction Continue
     exit 1
 }
 finally {
-    if (Test-Path -LiteralPath $downloadDirectory) {
+    $expectedRoot = [IO.Path]::GetFullPath($env:TEMP).TrimEnd('\') + '\'
+    $resolvedDownload = [IO.Path]::GetFullPath($downloadDirectory)
+    if ($resolvedDownload.StartsWith($expectedRoot, [StringComparison]::OrdinalIgnoreCase) -and
+        (Test-Path -LiteralPath $downloadDirectory)) {
         Remove-Item -LiteralPath $downloadDirectory -Recurse -Force -ErrorAction SilentlyContinue
     }
 }

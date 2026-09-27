@@ -13,6 +13,7 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
     <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -78,6 +79,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <EmbeddedResource Include="Assets\logo.png"><LogicalName>M365Debloater.Logo.png</LogicalName></EmbeddedResource>
+    <EmbeddedResource Include="Assets\app.ico"><LogicalName>M365Debloater.App.ico</LogicalName></EmbeddedResource>
+    <EmbeddedResource Include="..\scripts\Start-M365Debloater.ps1">
+      <LogicalName>M365Debloater.PrepareOdt.ps1</LogicalName>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

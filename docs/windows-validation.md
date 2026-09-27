@@ -14,7 +14,7 @@ The interface refresh was developed on Linux. The following runtime checks remai
 - With no Click-to-Run installation, Apply stays disabled and no setup process starts.
 - Unknown product, ambiguous suites, unknown channel/architecture and unsupported existing exclusion IDs block Apply with a useful message.
 - Exercise both 32-bit and 64-bit Office detection on 64-bit Windows.
-- With ODT missing, follow the preparation message and verify Refresh detection enables the workflow.
+- With ODT missing, verify automatic download and extraction, a responsive window and disabled Apply during preparation. On failure, verify Refresh detection retries. With ODT present, verify it is reused without a download.
 - Confirm the displayed installation matches registry values. Verify existing `<ProductID>.ExcludedApps` values appear in the summary and generated configuration.
 - Confirm nothing is checked initially. Change and clear selections, including all components; count and summary must agree.
 

@@ -15,16 +15,29 @@ namespace M365Debloater
         private Label lblStatus;
         private TextBox txtSelection;
         private ProgressBar pbProgress;
+        private Image _logoImage;
+        private Icon _appIcon;
 
         protected override void Dispose(bool disposing)
         {
             if (disposing && components != null) components.Dispose();
             base.Dispose(disposing);
+            if (disposing)
+            {
+                if (_logoImage != null) _logoImage.Dispose();
+                if (_appIcon != null) _appIcon.Dispose();
+            }
         }
 
         private void InitializeComponent()
         {
             SuspendLayout();
+            using (var stream = typeof(MainForm).Assembly.GetManifestResourceStream("M365Debloater.Logo.png"))
+            using (var image = Image.FromStream(stream))
+                _logoImage = new Bitmap(image);
+            using (var stream = typeof(MainForm).Assembly.GetManifestResourceStream("M365Debloater.App.ico"))
+                _appIcon = new Icon(stream);
+            Icon = _appIcon;
             Font = new Font("Segoe UI", 10F);
             ForeColor = Color.FromArgb(30, 41, 59);
             BackColor = Color.FromArgb(241, 245, 249);
@@ -50,7 +63,20 @@ namespace M365Debloater
             var header = CreateStack(Color.FromArgb(15, 23, 42), new Padding(28, 20, 28, 20));
             header.Controls.Add(CreateLabel("M365 Debloater", 23F, Color.White, true));
             header.Controls.Add(CreateLabel("Configure your Office installation, one component at a time.", 10F, Color.FromArgb(203, 213, 225)));
-            layout.Controls.Add(header, 0, 0);
+            var brand = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill, AutoSize = true, ColumnCount = 2, RowCount = 1,
+                BackColor = header.BackColor, Margin = Padding.Empty, Padding = new Padding(24, 0, 0, 0)
+            };
+            brand.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 76));
+            brand.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            brand.Controls.Add(new PictureBox
+            {
+                Image = _logoImage, SizeMode = PictureBoxSizeMode.Zoom, Dock = DockStyle.Fill,
+                Margin = new Padding(0, 16, 0, 16), TabStop = false, AccessibleName = "M365 Debloater logo"
+            }, 0, 0);
+            brand.Controls.Add(header, 1, 0);
+            layout.Controls.Add(brand, 0, 0);
 
             var installation = CreateStack(Color.White, new Padding(24, 16, 24, 16));
             installation.Margin = new Padding(24, 20, 24, 16);
