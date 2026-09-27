@@ -1,8 +1,22 @@
-# M365 Debloater
+<p align="center">
+  <img src="M365-Debloater/Assets/logo.png" alt="M365 Debloater logo" width="96" height="96">
+</p>
 
-<img src="M365-Debloater/Assets/logo.png" alt="M365 Debloater logo" width="112">
+<h1 align="center">M365 Debloater</h1>
 
-Reconfigure Microsoft 365 at the installation level using Microsoft's Office Deployment Tool (ODT).
+<p align="center">
+  Choose which Office components stay installed.
+</p>
+
+<p align="center">
+  <a href="https://github.com/szymon-tulodziecki/M365-Debloater/releases/latest">Download the latest release</a>
+  &nbsp;&middot;&nbsp;
+  <a href="#run-on-windows">Getting started</a>
+  &nbsp;&middot;&nbsp;
+  <a href="#build">Build from source</a>
+</p>
+
+---
 
 M365 Debloater changes which Office components are installed. It asks Office setup to apply a reduced configuration, rather than hiding apps, shortcuts or Start menu entries. ODT handles the installation changes; this application makes the selection and review explicit.
 
