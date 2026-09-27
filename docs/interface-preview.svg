@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="840" viewBox="0 0 1080 840" role="img" aria-labelledby="title description">
+  <title id="title">M365 Debloater interface design preview</title>
+  <desc id="description">A light interface with an installation summary, component checklist, selection review and an explicit Review and apply action. This is a design illustration, not a runtime screenshot.</desc>
+  <rect width="1080" height="840" fill="#e2e8f0"/>
+  <rect x="40" y="32" width="1000" height="762" rx="12" fill="#f1f5f9"/>
+  <path d="M52 32H1028Q1040 32 1040 44V168H40V44Q40 32 52 32" fill="#0f172a"/>
+  <g font-family="Segoe UI, Arial, sans-serif">
+    <text x="72" y="75" font-size="12" fill="#94a3b8" letter-spacing="2">OFFICE CONFIGURATION</text>
+    <text x="72" y="116" font-size="30" font-weight="700" fill="#fff">M365 Debloater</text>
+    <text x="72" y="145" font-size="15" fill="#cbd5e1">Configure your Office installation, one component at a time.</text>
+    <rect x="64" y="188" width="952" height="98" fill="#fff"/>
+    <text x="88" y="215" font-size="12" font-weight="700" fill="#475569">01 / YOUR INSTALLATION</text>
+    <text x="88" y="244" font-size="16" fill="#1e293b">O365BusinessRetail · 64-bit · Current</text>
+    <text x="88" y="268" font-size="13" fill="#64748b">Installed version shown here after detection</text>
+    <rect x="64" y="302" width="538" height="348" fill="#fff"/>
+    <text x="88" y="331" font-size="12" font-weight="700" fill="#475569">02 / CHOOSE COMPONENTS</text>
+    <text x="88" y="364" font-size="23" font-weight="700" fill="#1e293b">Select the apps to exclude</text>
+    <g fill="#fff" stroke="#94a3b8">
+      <rect x="88" y="389" width="17" height="17"/>
+      <rect x="88" y="417" width="17" height="17"/>
+      <rect x="88" y="445" width="17" height="17"/>
+      <rect x="88" y="473" width="17" height="17"/>
+      <rect x="88" y="501" width="17" height="17"/>
+      <rect x="88" y="529" width="17" height="17"/>
+      <rect x="88" y="557" width="17" height="17"/>
+    </g>
+    <g fill="#1d4ed8"><rect x="88" y="389" width="17" height="17"/><rect x="88" y="501" width="17" height="17"/></g>
+    <g stroke="#fff" fill="none" stroke-width="2"><path d="m91 397 4 4 7-8"/><path d="m91 509 4 4 7-8"/></g>
+    <g font-size="16" fill="#1e293b">
+      <text x="119" y="403">Access</text><text x="119" y="431">OneDrive</text>
+      <text x="119" y="459">OneNote</text><text x="119" y="487">Outlook (classic)</text>
+      <text x="119" y="515">Publisher</text><text x="119" y="543">Skype for Business</text>
+      <text x="119" y="571">Microsoft Teams</text>
+    </g>
+    <g font-size="12" fill="#475569">
+      <text x="88" y="603">Configuration options, not an inventory of installed apps.</text>
+      <text x="88" y="623">Separate Teams or OneDrive installs may need separate removal.</text>
+    </g>
+    <rect x="618" y="302" width="398" height="348" fill="#e6effa"/>
+    <text x="642" y="331" font-size="12" font-weight="700" fill="#334155">03 / REVIEW CHANGES</text>
+    <text x="642" y="364" font-size="23" font-weight="700" fill="#1e293b">2 components selected</text>
+    <g fill="#1e293b" font-size="16"><text x="642" y="407">• Access</text><text x="642" y="435">• Publisher</text></g>
+    <g fill="#334155" font-size="13">
+      <text x="642" y="565" font-weight="700">Before applying</text>
+      <text x="642" y="590">Save your work and close Office apps.</text>
+      <text x="642" y="611">Setup can take several minutes and may</text>
+      <text x="642" y="632">need internet access.</text>
+    </g>
+    <text x="64" y="680" font-size="14" fill="#475569">Ready. Select components to review your changes.</text>
+    <rect x="64" y="695" width="952" height="5" fill="#cbd5e1"/>
+    <path d="M40 720H1040V782Q1040 794 1028 794H52Q40 794 40 782Z" fill="#fff"/>
+    <rect x="420" y="735" width="184" height="42" fill="#fff" stroke="#cbd5e1"/>
+    <rect x="616" y="735" width="184" height="42" fill="#fff" stroke="#cbd5e1"/>
+    <rect x="812" y="735" width="204" height="42" fill="#1d4ed8"/>
+    <g font-size="14" text-anchor="middle"><text x="512" y="762" fill="#334155">Refresh detection</text><text x="708" y="762" fill="#334155">Clear selection</text><text x="914" y="762" fill="#fff">Review &amp; apply…</text></g>
+    <text x="540" y="821" text-anchor="middle" font-size="12" fill="#475569">DESIGN PREVIEW · Windows rendering has not yet been verified</text>
+  </g>
+</svg>
