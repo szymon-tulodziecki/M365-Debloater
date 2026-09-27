@@ -72,7 +72,8 @@ namespace M365Debloater
             brand.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
             brand.Controls.Add(new PictureBox
             {
-                Image = _logoImage, SizeMode = PictureBoxSizeMode.Zoom, Dock = DockStyle.Fill,
+                Image = _logoImage, SizeMode = PictureBoxSizeMode.Zoom,
+                Size = new Size(72, 72), Anchor = AnchorStyles.None,
                 Margin = new Padding(0, 16, 0, 16), TabStop = false, AccessibleName = "M365 Debloater logo"
             }, 0, 0);
             brand.Controls.Add(header, 1, 0);
